@@ -13,14 +13,6 @@
   "engines": {
     "node": ">=16"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/simonteaching/api-project.git"
-  },
-  "bugs": {
-    "url": "https://github.com/simonteaching/api-project/issues"
-  },
-  "homepage": "https://github.com/simonteaching/api-project#readme",
   "devDependencies": {
     "@tsconfig/node16": "^1.0.2",
     "@types/express": "^4.17.13",
