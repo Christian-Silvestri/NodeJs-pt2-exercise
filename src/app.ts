@@ -2,11 +2,11 @@ import express from "express";
 import "express-async-errors";
 import prisma from "./lib/prisma/client";
 
-import { 
-    validate,
-    planetSchema,
-    PlanetData,
-    validationErrorMiddleware, 
+import {
+  validate,
+  planetSchema,
+  PlanetData,
+  validationErrorMiddleware
 } from "./lib/validation";
 
 const app = express();
@@ -19,11 +19,64 @@ app.get("/planets", async (request, response) => {
   response.json(planets);
 });
 
-app.post("/planets", validate({ body: planetSchema }), async (request, response) => {
-  const planet: PlanetData = request.body;
+app.get("/planets/:id(\\d+)", async (request, response, next) => {
+  const planetId = Number(request.params.id);
 
-  response.status(201).json(planet);
+  const planet = await prisma.planet.findUnique({
+    where: { id: planetId }
+  });
+
+  if (!planet) {
+    response.status(404);
+    return next(`Cannot GET /planets/${planetId}`);
+  }
+
+  response.json(planet);
 });
+
+app.post("/planets", validate({ body: planetSchema }), async (request, response) => {
+    const planetData: PlanetData = request.body;
+    const planet = await prisma.planet.create({
+      data: planetData
+    });
+
+    response.status(201).json(planet);
+  }
+);
+
+app.put("/planets/:id(\\d+)", validate({ body: planetSchema }), async (request, response, next) => {
+    const planetId = Number(request.params.id);
+    const planetData: PlanetData = request.body;
+
+    try {
+      const planet = await prisma.planet.update({
+        where: { id: Number(request.params.id) },
+        data: planetData
+      });
+
+      response.status(200).json(planet);
+    } catch (error) {
+      response.status(404);
+      next(`Cannot PUT /planets/${planetId}`);
+    }
+  }
+);
+
+app.delete("/planets/:id(\\d+)", validate({ body: planetSchema }), async (request, response, next) => {
+    const planetId = Number(request.params.id);
+
+    try {
+      await prisma.planet.delete({
+        where: { id: planetId }
+      });
+
+      response.status(204).end();
+    } catch (error) {
+      response.status(404);
+      next(`Cannot DELETE /planets/${planetId}`);
+    }
+  }
+);
 
 app.use(validationErrorMiddleware);
 
