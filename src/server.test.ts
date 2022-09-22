@@ -17,8 +17,8 @@ describe("GET /planets", () => {
         description: null,
         diameter: 1234,
         moons: 12,
-        createdAt: "2022-09-20T15:36:11.162Z",
-        updatedAt: "2022-09-20T15:35:57.603Z"
+        createdAt: "2022-09-21T15:36:11.162Z",
+        updatedAt: "2022-09-21T15:35:57.603Z"
       },
       {
         id: 2,
@@ -26,8 +26,8 @@ describe("GET /planets", () => {
         description: null,
         diameter: 5678,
         moons: 2,
-        createdAt: "2022-09-20T15:36:41.513Z",
-        updatedAt: "2022-09-20T15:36:30.143Z"
+        createdAt: "2022-09-21T15:36:41.513Z",
+        updatedAt: "2022-09-21T15:36:30.143Z"
       }
     ];
 
@@ -46,15 +46,26 @@ describe("GET /planets", () => {
 
 describe("GET /planet/:id", () => {
   test("Valid request", async () => {
-    const planet = {
+    const planet = [
+      {
       id: 1,
       name: "Mercury",
       description: null,
       diameter: 1234,
       moons: 12,
-      createdAt: "2022-05-15T11:36:11.162Z",
-      updatedAt: "2022-05-15T11:35:57.603Z"
-    };
+      createdAt: "2022-09-20T11:36:11.162Z",
+      updatedAt: "2022-09-20T11:35:57.603Z"
+    },
+    {
+      id: 2,
+      name: "Venus",
+      description: null,
+      diameter: 5678,
+      moons: 2,
+      createdAt: "2022-09-20T11:36:41.513Z",
+      updatedAt: "2022-09-20T11:36:30.143Z",
+  },
+  ];
 
     // @ts-ignore
     prismaMock.planet.findUnique.mockResolvedValue(planet);
@@ -97,8 +108,8 @@ describe("POST /planets", () => {
       description: null,
       diameter: 1234,
       moons: 12,
-      createdAt: "2022-05-15T14:51:23.372Z",
-      updatedAt: "2022-05-15T14:51:23.372Z"
+      createdAt: "2022-09-20T14:51:23.372Z",
+      updatedAt: "2022-09-20T14:51:23.372Z"
     };
 
     // @ts-ignore
@@ -146,15 +157,15 @@ describe("PUT /planets/:id", () => {
       description: "lovely planet",
       diameter: 1234,
       moons: 12,
-      createdAt: "2022-05-15T14:51:23.372Z",
-      updatedAt: "2022-05-15T14:51:23.372Z"
+      createdAt: "2022-09-20T14:51:23.372Z",
+      updatedAt: "2022-09-20T14:51:23.372Z"
     };
 
     // @ts-ignore
     prismaMock.planet.update.mockResolvedValue(planet);
 
     const response = await request
-      .put("/planets/23")
+      .put("/planets/3")
       .send({
         name: "Mercury",
         diameter: 1234,
@@ -175,7 +186,7 @@ describe("PUT /planets/:id", () => {
     };
 
     const response = await request
-      .put("/planets/:id")
+      .put("/planets/23")
       .send(planet)
       .expect(422)
       .expect("Content-Type", /application\/json/);
@@ -202,7 +213,7 @@ describe("PUT /planets/:id", () => {
       .expect(404)
       .expect("Content-Type", /text\/html/);
 
-    expect(response.text).toContain("Cannot GET /planets/23");
+    expect(response.text).toContain("Cannot PUT /planets/23");
   });
 
   test("Invalid planet ID", async () => {
@@ -229,7 +240,7 @@ describe("DELETE /planet/:id", () => {
       .expect('Access-Control-Allow-Origin', 'http://localhost:8080');
     
 
-    expect(response.text).toEqual('');
+    expect(response.text).toEqual("");
   });
 
   test("Planet does not exist", async () => {
@@ -253,3 +264,33 @@ describe("DELETE /planet/:id", () => {
     expect(response.text).toContain("Cannot DELETE /planets/abcd");
   });
 });
+
+describe("POST /planets/:id/photo", () => {
+
+  test("Valid request with PNG file upload", async () => {
+    await request
+      .post("/planets/23/photo")
+      .attach("photo", "test-fixtures/photos/file.png")
+      .expect(201)
+      .expect("Access-Control-Allow-Origin", "http://localhost:8080")
+  })
+
+  test("Invalid planet ID", async () => {
+    const response = await request
+      .post("/planets/abcd/photo")
+      .expect(404)
+      .expect("Content-Type", /text\/html/);
+
+    expect(response.text).toContain("Cannot POST /planets/abcd/photo")
+  });
+
+  test("Invalid request with no file upload", async () => {
+    const response = await request  
+      .post("/planets/23/photo")
+      .expect(400)
+      .expect("Content-Type", /text\/html/);
+
+    expect(response.text).toContain("No photo file uploaded.")
+  })
+
+})
