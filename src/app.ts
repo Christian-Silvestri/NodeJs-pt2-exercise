@@ -91,7 +91,7 @@ app.delete("/planets/:id(\\d+)", async (request, response, next) => {
 app.post("/planets/:id(\\d+)/photo",
   upload.single("photo"),
   async (request, response, next) => {
-    console.log("request.file", request.file);
+    /* console.log("request.file", request.file); */
 
     if(!request.file) {
       response.status(400);
