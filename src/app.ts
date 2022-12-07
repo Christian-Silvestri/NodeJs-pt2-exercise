@@ -1,14 +1,25 @@
 import express from "express";
 import "express-async-errors";
-
-import prisma from "./lib/prisma/client";
+import { validationErrorMiddleware } from "./lib/middleware/validation";
+import planetsRoutes from './routes/planets';
+import { initCorsMiddleware } from "./lib/middleware/cors";
+import { initSessionMiddleware } from "./lib/middleware/session";
+import { passport } from './lib/middleware/passport';
+import authRoutes  from './routes/auth';
 
 const app = express();
 
-app.get("/planets", async (request, response) => {
-    const planets = await prisma.planet.findMany();
+app.use(initSessionMiddleware());
+app.use(passport.initialize());
+app.use(passport.session());
 
-    response.json(planets);
-});
+app.use(express.json());
+
+app.use(initCorsMiddleware());
+
+app.use("/planets", planetsRoutes);
+app.use("/auth", authRoutes);
+
+app.use(validationErrorMiddleware);
 
 export default app;
